@@ -1,0 +1,47 @@
+version: "3.7"
+services:
+    frontend:
+        container_name: magic8ball-front
+        build:
+            context: ./magic8ball-front
+            dockerfile: Dockerfile
+        image: imr/magic8ball-front
+        ports:
+            - 3000:3000
+        volumes:
+            - ./magic8ball-front:/usr/src/app
+        networks:
+            - magic8ballnetwork
+    backend:
+        container_name: magic8ball-back
+        build:
+            context: ./magic8ball-back
+            dockerfile: Dockerfile
+        image: imr/magic8ball-back
+        ports:
+            - 8000:8000
+        volumes:
+            - ./magic8ball-back:/usr/src/app
+        depends_on:
+            - database
+        networks:
+            - magic8ballnetwork
+    database:
+        container_name: magic8ball_database
+        image: mongo:latest
+        ports:
+            - 27017:27017
+        # command: mongod
+        restart: always
+        environment:
+          MONGO_INITDB_ROOT_USERNAME: admin-user
+          MONGO_INITDB_ROOT_PASSWORD: admin-password
+         MONGO_INITDB_DATABASE: admin
+        volumes:
+          - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo-js:ro
+          - ./data:/data/db
+        networks:
+            - magic8ballnetwork
+networks:
+    magic8ballnetwork:
+        driver: bridge
